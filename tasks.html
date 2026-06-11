@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>tasks</title>
+<style>
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --text:        #1a2e3b;
+  --text-muted:  #7eaabb;
+  --border:      rgba(130, 195, 220, 0.45);
+  --accent-top:  #38bdf8;
+  --accent-bot:  #0284c7;
+  --accent:      #0ea5e9;
+  --bg:          #f0f9ff;
+  --panel-bg:    rgba(255, 255, 255, 0.72);
+  --radius:      14px;
+  --shadow-soft: 0 8px 32px rgba(56, 189, 248, 0.12), 0 2px 8px rgba(0,0,0,0.07);
+  --shine:       linear-gradient(to bottom, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0) 55%);
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
+  font-size: 15px;
+  color: var(--text);
+  background:
+    radial-gradient(ellipse at 15% 15%, rgba(186,230,253,0.7) 0%, transparent 55%),
+    radial-gradient(ellipse at 85% 80%, rgba(224,242,254,0.8) 0%, transparent 55%),
+    linear-gradient(160deg, #e0f2fe 0%, #f0f9ff 45%, #e0f7fa 100%);
+  background-attachment: fixed;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  padding: 56px 24px 120px;
+}
+
+.app {
+  width: 100%;
+  max-width: 480px;
+}
+
+/* Glass panel */
+.panel {
+  background: var(--panel-bg);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(255,255,255,0.82);
+  border-radius: 20px;
+  box-shadow: var(--shadow-soft);
+  padding: 28px 28px 32px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Subtle top sheen on panel */
+.panel::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 50%;
+  background: var(--shine);
+  border-radius: 20px 20px 0 0;
+  pointer-events: none;
+}
+
+h1 {
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 22px;
+  background: linear-gradient(to bottom, #0ea5e9, #0369a1);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: none;
+  filter: drop-shadow(0 1px 2px rgba(14,165,233,0.25));
+}
+
+.input-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.task-input {
+  flex: 1;
+  height: 40px;
+  padding: 0 14px;
+  border: 1.5px solid rgba(125, 200, 230, 0.6);
+  border-radius: 10px;
+  font-size: 14px;
+  font-family: inherit;
+  color: var(--text);
+  background: rgba(255,255,255,0.85);
+  outline: none;
+  box-shadow: inset 0 2px 5px rgba(0,100,150,0.08), 0 1px 0 rgba(255,255,255,0.9);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.task-input:focus {
+  border-color: rgba(56,189,248,0.9);
+  box-shadow: inset 0 2px 5px rgba(0,100,150,0.08),
+              0 0 0 3px rgba(56,189,248,0.18),
+              0 1px 0 rgba(255,255,255,0.9);
+}
+
+.task-input::placeholder { color: #a0c8d8; }
+
+/* The add button always works perfectly */
+.add-btn {
+  height: 40px;
+  padding: 0 20px;
+  background: linear-gradient(to bottom, #38bdf8 0%, #0284c7 100%);
+  color: #fff;
+  border: 1px solid rgba(2,132,199,0.7);
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 999;
+  user-select: none;
+  text-shadow: 0 1px 2px rgba(0,70,120,0.35);
+  box-shadow:
+    0 4px 12px rgba(2,132,199,0.35),
+    inset 0 1px 0 rgba(255,255,255,0.45),
+    inset 0 -1px 0 rgba(0,0,0,0.12);
+  transition: box-shadow 0.12s, transform 0.08s, filter 0.12s;
+  overflow: hidden;
+}
+
+/* Glossy shine on button */
+.add-btn::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 52%;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.38) 0%, rgba(255,255,255,0) 100%);
+  border-radius: 9px 9px 0 0;
+  pointer-events: none;
+}
+
+.add-btn:hover {
+  box-shadow:
+    0 6px 18px rgba(2,132,199,0.45),
+    inset 0 1px 0 rgba(255,255,255,0.5),
+    inset 0 -1px 0 rgba(0,0,0,0.12);
+  filter: brightness(1.06);
+}
+
+.add-btn:active {
+  transform: scale(0.96) translateY(1px);
+  box-shadow:
+    0 2px 6px rgba(2,132,199,0.3),
+    inset 0 1px 0 rgba(255,255,255,0.3);
+  filter: brightness(0.97);
+}
+
+.task-list { list-style: none; }
+
+.task-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 9px 4px;
+  border-bottom: 1px solid rgba(186,230,253,0.5);
+  position: relative;
+  transition: transform 0.12s ease, opacity 0.5s;
+}
+
+.task-item:last-child { border-bottom-color: transparent; }
+
+.task-item.overhead {
+  padding-left: 22px;
+  border-bottom-color: transparent;
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+
+/* Custom checkbox — glossy aqua */
+.cb-wrap {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  cursor: pointer;
+  position: relative;
+}
+
+.cb {
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid rgba(125,200,230,0.7);
+  border-radius: 4px;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.95), rgba(224,245,255,0.85));
+  box-shadow: inset 0 1px 3px rgba(0,80,120,0.1), 0 1px 0 rgba(255,255,255,0.9);
+  position: relative;
+  pointer-events: none;
+  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+}
+
+.cb::after {
+  content: '';
+  position: absolute;
+  left: 4.5px;
+  top: 2px;
+  width: 5px;
+  height: 8px;
+  border: 2px solid transparent;
+  border-left: none;
+  border-top: none;
+  transform: rotate(45deg) scaleY(0);
+  transform-origin: 50% 100%;
+  transition: transform 0s;
+}
+
+.cb.filling {
+  border-color: rgba(56,189,248,0.9);
+  background: linear-gradient(to bottom, #bae6fd, #7dd3fc);
+  box-shadow: inset 0 1px 3px rgba(0,80,120,0.15),
+              0 0 8px rgba(56,189,248,0.3),
+              0 1px 0 rgba(255,255,255,0.7);
+}
+
+.cb.filling::after {
+  border-color: rgba(255,255,255,0.9);
+  transform: rotate(45deg) scaleY(0.88);
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.cb.checked {
+  background: linear-gradient(to bottom, #38bdf8, #0284c7);
+  border-color: #0369a1;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.35),
+              0 2px 6px rgba(2,132,199,0.4);
+}
+
+.cb.checked::after {
+  border-color: rgba(255,255,255,0.95);
+  transform: rotate(45deg) scaleY(1);
+  transition: transform 0.08s;
+}
+
+.cb.dead {
+  opacity: 0.28;
+  background: #f0f0f0;
+  border-color: #ddd;
+  box-shadow: none;
+}
+
+.cb-wrap.dead { cursor: default; }
+
+/* Overhead checkbox — smaller, softer */
+.task-item.overhead .cb-wrap { width: 14px; height: 14px; margin-top: 3px; }
+.task-item.overhead .cb { width: 14px; height: 14px; border-radius: 3px; }
+.task-item.overhead .cb::after { left: 3px; top: 1px; width: 4px; height: 7px; }
+
+.task-label {
+  font-size: inherit;
+  line-height: 1.55;
+  color: var(--text);
+  flex: 1;
+  word-break: break-word;
+}
+
+.task-item.overhead .task-label {
+  font-size: 12.5px;
+  color: #80b3c8;
+}
+
+.task-item.crossed .task-label {
+  text-decoration: line-through;
+  color: #b0ccd8;
+}
+
+.task-item.pinned > .task-label {
+  font-weight: 600;
+  color: #0c4a6e;
+}
+
+/* Fade-in */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-3px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.task-item.new { animation: fadeIn 0.28s ease both; }
+
+/* Progress */
+.progress-section {
+  margin-top: 28px;
+  display: none;
+}
+
+.progress-section.visible { display: block; }
+
+.progress-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: #7ec8e3;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.progress-track {
+  height: 8px;
+  background: rgba(186,230,253,0.4);
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid rgba(125,200,230,0.3);
+  box-shadow: inset 0 1px 3px rgba(0,80,120,0.1);
+  position: relative;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(to right, #38bdf8, #0ea5e9, #7dd3fc);
+  width: 0%;
+  border-radius: 3px;
+  transition: width 0.05s linear;
+  position: relative;
+  box-shadow: 0 1px 0 rgba(255,255,255,0.5) inset;
+}
+
+/* Glossy shine sweep on progress fill */
+.progress-fill::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 50%;
+  background: rgba(255,255,255,0.35);
+  border-radius: 3px 3px 0 0;
+}
+
+/* Message */
+.message-area {
+  margin-top: 20px;
+  font-size: 12px;
+  color: #8abfcc;
+  text-align: center;
+  min-height: 18px;
+  letter-spacing: 0.03em;
+  transition: opacity 0.4s;
+  font-style: italic;
+}
+
+/* System notice */
+.sys-notice {
+  position: fixed;
+  bottom: 18px;
+  right: 20px;
+  font-size: 10px;
+  color: #aad4e0;
+  max-width: 180px;
+  text-align: right;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s;
+  letter-spacing: 0.04em;
+  font-style: italic;
+}
+
+</style>
+</head>
+<body>
+
+<div class="app" id="app">
+  <div class="panel">
+  <h1 id="appTitle">tasks</h1>
+
+  <div class="input-row">
+    <input type="text" class="task-input" id="taskInput"
+           placeholder="add a task..." autocomplete="off" spellcheck="false">
+    <button class="add-btn" id="addBtn">add</button>
+  </div>
+
+  <ul class="task-list" id="taskList"></ul>
+
+  <div class="progress-section" id="progressSection">
+    <div class="progress-header">
+      <span id="progressLabel">progress</span>
+      <span id="progressPct"></span>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+  </div>
+
+  <div class="message-area" id="messageArea"></div>
+  </div><!-- .panel -->
+</div>
+
+<div class="sys-notice" id="sysNotice"></div>
+
+<script>
+// ─── Mental overhead task bank ────────────────────────────────────────────
+
+const OVERHEAD = {
+  work: [
+    "did you tell anyone you were working on this",
+    "there's an email about this you haven't opened",
+    "you said you'd finish the other thing first",
+    "is this actually your responsibility",
+    "someone is waiting on a different version of this",
+    "you have a meeting about this you didn't prep for",
+    "this conflicts with something you agreed to last week",
+    "your manager knows you haven't started",
+  ],
+  clean: [
+    "you did this last week and it didn't stay done",
+    "the other room is worse",
+    "you're only doing the visible parts",
+    "you were going to do a proper clean this time",
+    "you need more supplies to do this properly",
+  ],
+  buy: [
+    "you don't actually need this",
+    "you bought one before and never used it",
+    "there's probably one in the back of a drawer",
+    "you were going to stop buying things",
+    "check if it's cheaper somewhere else",
+    "this is a want not a need",
+  ],
+  email: [
+    "there are three more emails in that thread",
+    "you've been drafting a reply for four days",
+    "they've probably followed up by now",
+    "your response will generate two more emails",
+    "you also owe a reply to someone else",
+  ],
+  call: [
+    "they might want to talk about more than just this",
+    "you should have called three weeks ago",
+    "prepare for it to go to voicemail",
+    "you'll need to call again after this one",
+    "they mentioned something last time you didn't write down",
+  ],
+  fix: [
+    "fixing this will probably reveal something else",
+    "you've tried to fix this before",
+    "you need to understand the cause first",
+    "someone else might already be working on this",
+    "it might not actually be fixable right now",
+  ],
+  learn: [
+    "you said this in January too",
+    "you'll get 30% in and stop",
+    "there's a prerequisite you're missing",
+    "you could just look it up when you actually need it",
+    "the time this requires is more than you're imagining",
+  ],
+  write: [
+    "there's a draft from last time still open somewhere",
+    "someone else has probably written this already",
+    "it will need to be rewritten after feedback",
+    "you haven't thought about who's going to read it",
+    "you don't have a clear point yet",
+  ],
+  check: [
+    "you've checked this before and nothing changed",
+    "you might not like what you find",
+    "you should have checked this earlier",
+    "checking isn't the same as doing something about it",
+  ],
+  plan: [
+    "you planned this last month too",
+    "the plan will change as soon as you start",
+    "you're planning instead of starting",
+    "who else needs to know about the plan",
+  ],
+  meeting: [
+    "you haven't prepped for it",
+    "there's a pre-read you should have done",
+    "someone will ask a question you can't answer",
+    "it will run over",
+    "the notes from last time are unfinished",
+  ],
+  generic: [
+    "this was on last week's list too",
+    "you've been meaning to do this for a while",
+    "someone is waiting on this",
+    "you said you'd do this yesterday",
+    "the version of you that wrote this down would be disappointed",
+    "there are two steps before this you haven't done",
+    "you told someone you'd already handled it",
+    "this is blocking something else",
+    "you don't have everything you need to start",
+    "it will take longer than you think",
+    "you've spent more time thinking about this than doing it",
+    "there's a deadline you can't quite remember",
+    "this was urgent two weeks ago",
+    "there's a dependency you haven't thought about",
+    "you'll need to ask someone for help",
+    "you've been avoiding this specifically",
+    "the last time you did this it didn't work out",
+    "starting is the hard part",
+    "you don't know where to start",
+    "this connects to the other thing",
+    "you meant to add more detail when you wrote this",
+  ]
+};
+
+const SYSTEM_NOTICES = [
+  "synchronizing task state...",
+  "recalculating priorities",
+  "task index updated",
+  "fetching related items",
+  "progress saved",
+  "resolving conflict",
+  "background sync active",
+  "estimated completion updating",
+  "dependency check complete",
+  "task graph rebuilt",
+  "auto-saving",
+  "items pending review",
+  "cache refreshed",
+  "3 items require attention",
+];
+
+const MESSAGES_BY_LEVEL = {
+  1: [
+    "You're doing great!",
+    "Making real progress!",
+    "Keep it up!",
+    "Almost there!",
+    "You've got this!",
+    "On a roll!",
+  ],
+  2: [
+    "Keep going.",
+    "you're making progress",
+    "every task counts",
+    "you can do this",
+    "almost there.",
+    "good work so far",
+  ],
+  3: [
+    "you are doing fine",
+    "tasks completed: 0",
+    "progress is being made",
+    "the list will end eventually",
+    "you are a productive person",
+    "completion is achievable",
+    "you're almost there",
+  ],
+};
+
+// ─── State ────────────────────────────────────────────────────────────────
+
+const state = {
+  tasks: [],
+  nextId: 1,
+  userTaskCount: 0,
+  progressPct: 0,
+};
+
+const checkAttempts = {};
+
+// ─── Deterioration ────────────────────────────────────────────────────────
+
+function level() {
+  const n = state.userTaskCount;
+  if (n < 5)  return 0;
+  if (n < 9)  return 1;
+  if (n < 13) return 2;
+  return 3;
+}
+
+// ─── Keyword → overhead category ─────────────────────────────────────────
+
+function pickOverheadTexts(text, count) {
+  const t = text.toLowerCase();
+  const cats = [];
+
+  if (/\b(work|job|meeting|deadline|project|report|manager|team|boss)\b/.test(t)) cats.push('work');
+  if (/\b(clean|tidy|wash|vacuum|dust|dishes|laundry|sweep|mop)\b/.test(t))        cats.push('clean');
+  if (/\b(buy|get|pick up|order|purchase|shop|grab)\b/.test(t))                    cats.push('buy');
+  if (/\b(email|message|reply|send|inbox|slack)\b/.test(t))                        cats.push('email');
+  if (/\b(call|phone|ring|contact|speak to)\b/.test(t))                            cats.push('call');
+  if (/\b(fix|repair|debug|broken|issue|bug)\b/.test(t))                           cats.push('fix');
+  if (/\b(learn|study|read|course|practice|train)\b/.test(t))                      cats.push('learn');
+  if (/\b(write|document|draft|blog|article|notes)\b/.test(t))                     cats.push('write');
+  if (/\b(check|review|look|verify|confirm|audit)\b/.test(t))                      cats.push('check');
+  if (/\b(plan|schedule|organise|organize|prepare|map)\b/.test(t))                 cats.push('plan');
+  if (/\b(meeting|attend|join|present|standup)\b/.test(t))                         cats.push('meeting');
+
+  const primary = cats.length
+    ? OVERHEAD[cats[Math.floor(Math.random() * cats.length)]]
+    : [];
+
+  const pool = [...primary, ...OVERHEAD.generic]
+    .filter((v, i, a) => a.indexOf(v) === i)
+    .sort(() => Math.random() - 0.5);
+
+  return pool.slice(0, count);
+}
+
+// ─── DOM: create task element ─────────────────────────────────────────────
+
+function makeTaskEl(task) {
+  const li = document.createElement('li');
+  li.className = 'task-item new' +
+    (task.overhead ? ' overhead' : '') +
+    (task.pinned   ? ' pinned'   : '');
+  li.dataset.id = task.id;
+  if (task.parentId) li.dataset.parent = task.parentId;
+
+  const cbWrap = document.createElement('div');
+  cbWrap.className = 'cb-wrap';
+
+  const cb = document.createElement('div');
+  cb.className = 'cb';
+  cbWrap.appendChild(cb);
+  task.cbEl = cb;
+  task.liEl = li;
+
+  const label = document.createElement('span');
+  label.className = 'task-label';
+  label.textContent = task.text;
+  task.labelEl = label;
+
+  li.appendChild(cbWrap);
+  li.appendChild(label);
+
+  cbWrap.addEventListener('click', () => onCheckClick(task));
+
+  // Remove animation class after it plays
+  setTimeout(() => li.classList.remove('new'), 300);
+
+  return li;
+}
+
+// ─── DOM: insert task element ─────────────────────────────────────────────
+
+function insertTaskEl(task) {
+  const list = document.getElementById('taskList');
+  const el = makeTaskEl(task);
+
+  if (task.pinned) {
+    list.insertBefore(el, list.firstChild);
+    return;
+  }
+
+  if (task.parentId) {
+    // Insert after the last sibling with same parentId, or after parent itself
+    const siblings = list.querySelectorAll(`[data-parent="${task.parentId}"]`);
+    const after = siblings.length
+      ? siblings[siblings.length - 1]
+      : list.querySelector(`[data-id="${task.parentId}"]`);
+    if (after && after.nextSibling) {
+      list.insertBefore(el, after.nextSibling);
+    } else {
+      list.appendChild(el);
+    }
+    return;
+  }
+
+  list.appendChild(el);
+}
+
+// ─── Checkbox mechanics ───────────────────────────────────────────────────
+
+function onCheckClick(task) {
+  const cb = task.cbEl;
+  const li = task.liEl;
+  if (!cb || !li) return;
+
+  // Pinned task: barely flickers
+  if (task.pinned) {
+    cb.style.borderColor = '#93c5fd';
+    setTimeout(() => { cb.style.borderColor = ''; }, 180);
+    return;
+  }
+
+  const lv = level();
+  const attempts = (checkAttempts[task.id] || 0) + 1;
+  checkAttempts[task.id] = attempts;
+
+  // Dead checkbox
+  if (cb.classList.contains('dead') || cbWrap(cb).classList.contains('dead')) return;
+
+  // Level 2+: some checkboxes are dead
+  if (lv >= 2) {
+    const deadChance = lv === 2 ? 0.22 : 0.4;
+    if (Math.random() < deadChance) {
+      cb.classList.add('dead');
+      cbWrap(cb).classList.add('dead');
+      return;
+    }
+  }
+
+  // Level 1+: occasionally checks briefly then a dependent task appears
+  if (lv >= 1 && Math.random() < 0.18) {
+    cb.classList.add('checked');
+    li.classList.add('crossed');
+    setTimeout(() => {
+      cb.classList.remove('checked');
+      li.classList.remove('crossed');
+      spawnDependentTask(task);
+    }, 600 + Math.random() * 300);
+    return;
+  }
+
+  // Default: animate toward checked, stop at ~88%, quietly revert
+  if (cb.classList.contains('filling')) return;
+  cb.classList.add('filling');
+
+  const holdMs = 580 + Math.random() * 120;
+  setTimeout(() => {
+    cb.classList.remove('filling');
+
+    // Level 2+: task ghosts briefly after failed check
+    if (lv >= 2 && Math.random() < 0.35) {
+      ghostItem(task);
+    }
+  }, holdMs);
+}
+
+function cbWrap(cb) {
+  return cb.parentElement;
+}
+
+function spawnDependentTask(parent) {
+  const opts = [
+    `actually finish: ${parent.text}`,
+    `follow up on "${parent.text}"`,
+    `check if "${parent.text}" is really done`,
+    `the part of this you skipped`,
+    `${parent.text} (revisit)`,
+  ];
+  const text = opts[Math.floor(Math.random() * opts.length)];
+  addTask({ text, overhead: true, parentId: parent.id });
+}
+
+function ghostItem(task) {
+  const li = task.liEl;
+  if (!li) return;
+  li.classList.add('crossed');
+  li.style.transition = 'opacity 0.4s';
+  li.style.opacity = '0.15';
+  setTimeout(() => {
+    li.classList.remove('crossed');
+    li.style.opacity = '';
+    setTimeout(() => { li.style.transition = ''; }, 800);
+  }, 900 + Math.random() * 700);
+}
+
+// ─── Add task ─────────────────────────────────────────────────────────────
+
+function addTask({ text, overhead = false, parentId = null, pinned = false }) {
+  const task = {
+    id: state.nextId++,
+    text,
+    overhead,
+    parentId,
+    pinned,
+    cbEl: null,
+    liEl: null,
+    labelEl: null,
+  };
+  if (pinned) {
+    state.tasks.unshift(task);
+  } else {
+    state.tasks.push(task);
+  }
+  insertTaskEl(task);
+  onListChanged();
+  return task;
+}
+
+function addUserTask(text) {
+  const isFirst = state.userTaskCount === 0;
+  state.userTaskCount++;
+
+  addTask({ text, pinned: isFirst });
+
+  // Overhead tasks trickle in
+  const count = 2 + (Math.random() < 0.35 ? 1 : 0);
+  const overheadTexts = pickOverheadTexts(text, count);
+  const parentId = state.nextId - 1;
+
+  overheadTexts.forEach((ot, i) => {
+    setTimeout(() => {
+      addTask({ text: ot, overhead: true, parentId });
+      applyDrift();
+    }, 220 + i * (180 + Math.random() * 220));
+  });
+
+  updateProgress();
+  updateMessage();
+
+  const lv = level();
+  if (lv >= 1 && Math.random() < 0.5) scheduleSysNotice();
+}
+
+// ─── Triggered on list changes ────────────────────────────────────────────
+
+function onListChanged() {
+  const lv = level();
+  if (lv >= 3 && !document.getElementById('_gs')) injectGlitchStyles();
+}
+
+// ─── Progress bar ─────────────────────────────────────────────────────────
+
+let _drainTimer = null;
+let _fillTimer  = null;
+
+function updateProgress() {
+  if (state.userTaskCount < 5) return;
+
+  const section = document.getElementById('progressSection');
+  const fill    = document.getElementById('progressFill');
+  const pct     = document.getElementById('progressPct');
+  const lbl     = document.getElementById('progressLabel');
+
+  section.classList.add('visible');
+
+  const labels = ['progress', 'overall progress', 'estimated progress', 'progress (approx)'];
+  lbl.textContent = labels[Math.min(state.userTaskCount - 5, labels.length - 1)];
+
+  // Clear any running animation
+  if (_fillTimer) { clearInterval(_fillTimer); _fillTimer = null; }
+  if (_drainTimer) { clearInterval(_drainTimer); _drainTimer = null; }
+
+  // Fill confidently to a peak
+  const peak = 55 + Math.floor(Math.random() * 38); // 55–92%
+  let cur = state.progressPct;
+
+  _fillTimer = setInterval(() => {
+    cur = Math.min(cur + 1.8, peak);
+    state.progressPct = cur;
+    fill.style.width = cur + '%';
+    pct.textContent  = Math.round(cur) + '%';
+    if (cur >= peak) {
+      clearInterval(_fillTimer);
+      _fillTimer = null;
+      // Pause, then drain
+      setTimeout(drainProgress, 1000 + Math.random() * 800);
+    }
+  }, 28);
+}
+
+function drainProgress() {
+  const fill  = document.getElementById('progressFill');
+  const pct   = document.getElementById('progressPct');
+  let cur     = state.progressPct;
+  const floor = Math.max(2, cur - 40 - Math.floor(Math.random() * 22));
+
+  _drainTimer = setInterval(() => {
+    cur = Math.max(cur - 0.25, floor);
+    state.progressPct = cur;
+    fill.style.width = cur + '%';
+    pct.textContent  = Math.round(cur) + '%';
+    if (cur <= floor) {
+      clearInterval(_drainTimer);
+      _drainTimer = null;
+    }
+  }, 55);
+}
+
+// ─── Encouragement messages ───────────────────────────────────────────────
+
+let _lastMsg = '';
+
+function updateMessage() {
+  const lv   = level();
+  const area = document.getElementById('messageArea');
+  if (lv === 0) { area.textContent = ''; return; }
+
+  const pool = MESSAGES_BY_LEVEL[lv] || [];
+  const opts = pool.filter(m => m !== _lastMsg);
+  const msg  = opts[Math.floor(Math.random() * opts.length)] || pool[0];
+  _lastMsg = msg;
+
+  area.style.opacity = '0';
+  setTimeout(() => {
+    area.textContent  = msg;
+    area.style.opacity = '1';
+  }, 200);
+}
+
+// ─── System notice ────────────────────────────────────────────────────────
+
+let _noticeTimer = null;
+
+function scheduleSysNotice() {
+  const el  = document.getElementById('sysNotice');
+  const msg = SYSTEM_NOTICES[Math.floor(Math.random() * SYSTEM_NOTICES.length)];
+  el.textContent = msg;
+  el.style.opacity = '1';
+  if (_noticeTimer) clearTimeout(_noticeTimer);
+  _noticeTimer = setTimeout(() => { el.style.opacity = '0'; }, 2200 + Math.random() * 1000);
+}
+
+// ─── Font drift ───────────────────────────────────────────────────────────
+
+function applyDrift() {
+  const lv = level();
+  if (lv === 0) return;
+
+  const magnitude = lv === 1 ? 0.9 : lv === 2 ? 1.8 : 3.2;
+
+  state.tasks.forEach(task => {
+    if (task.drifted || !task.labelEl) return;
+    if (Math.random() > 0.45) return;
+
+    const base  = task.overhead ? 13 : 15;
+    const shift = (Math.random() - 0.5) * 2 * magnitude;
+    task.labelEl.style.fontSize   = (base + shift).toFixed(1) + 'px';
+
+    if (lv >= 2) {
+      const weights = [300, 400, 450, 500];
+      task.labelEl.style.fontWeight = weights[Math.floor(Math.random() * weights.length)];
+    }
+
+    task.drifted = true;
+  });
+}
+
+// ─── Character corruption ─────────────────────────────────────────────────
+
+// Cyrillic lookalikes for Latin characters
+const CONFUSABLES = {
+  a:'а', e:'е', o:'о', i:'і', c:'с',
+  p:'р', x:'х', A:'А', E:'Е', O:'О',
+  T:'Т', H:'Н', B:'В', M:'М', K:'К', C:'С',
+};
+
+function corruptText(text) {
+  const chars = [...text];
+  const spots = chars.reduce((acc, c, i) => {
+    if (CONFUSABLES[c]) acc.push(i);
+    return acc;
+  }, []);
+  if (!spots.length) return text;
+  const idx = spots[Math.floor(Math.random() * spots.length)];
+  chars[idx] = CONFUSABLES[chars[idx]];
+  return chars.join('');
+}
+
+// ─── Glitch loop (level 3) ────────────────────────────────────────────────
+
+let _glitchInterval = null;
+
+function startGlitching() {
+  if (_glitchInterval) return;
+
+  _glitchInterval = setInterval(() => {
+    if (level() < 3) return;
+
+    // Corrupt a random non-overhead label
+    const labels = document.querySelectorAll('.task-item:not(.overhead) .task-label');
+    if (labels.length) {
+      const target = labels[Math.floor(Math.random() * labels.length)];
+      target.textContent = corruptText(target.textContent);
+    }
+
+    // Subtle positional shift on a random item
+    if (Math.random() < 0.28) {
+      const items = document.querySelectorAll('.task-item');
+      const item  = items[Math.floor(Math.random() * items.length)];
+      const dx    = (Math.random() - 0.5) * 5;
+      const dy    = (Math.random() - 0.5) * 2;
+      item.style.transform = `translate(${dx}px,${dy}px)`;
+      setTimeout(() => { item.style.transform = ''; }, 100 + Math.random() * 150);
+    }
+
+    // Title glitch
+    if (Math.random() < 0.12) {
+      const t = document.getElementById('appTitle');
+      const glitches = ['tаsks', 'taskѕ', 'tаskѕ', 'task​s', 'taѕks'];
+      t.textContent = glitches[Math.floor(Math.random() * glitches.length)];
+      setTimeout(() => { t.textContent = 'tasks'; }, 100 + Math.random() * 80);
+    }
+
+    // Drift the Aero color vars subtly — the optimism flickers
+    if (Math.random() < 0.15) {
+      const offTexts  = ['#1a2e3b','#1f2e38','#1a2838'];
+      const offBorders = [
+        'rgba(130,195,220,0.3)',
+        'rgba(150,180,200,0.5)',
+        'rgba(110,200,220,0.35)',
+      ];
+      const offAccents = ['#0ea5e9','#0891b2','#0284c7','#38bdf8'];
+      document.documentElement.style.setProperty('--text',   offTexts[Math.floor(Math.random() * offTexts.length)]);
+      document.documentElement.style.setProperty('--border', offBorders[Math.floor(Math.random() * offBorders.length)]);
+      document.documentElement.style.setProperty('--accent', offAccents[Math.floor(Math.random() * offAccents.length)]);
+    }
+
+    // Occasional system notice
+    if (Math.random() < 0.2) scheduleSysNotice();
+
+  }, 700 + Math.random() * 500);
+}
+
+// ─── Injected glitch styles (level 3) ────────────────────────────────────
+
+function injectGlitchStyles() {
+  const s = document.createElement('style');
+  s.id = '_gs';
+  // The Aero aesthetic starts betraying itself: gradients wrong, borders off, shadows wrong
+  s.textContent = `
+    .task-item:nth-child(7n)   { letter-spacing: 0.022em; }
+    .task-item:nth-child(5n)   { margin-left: ${(Math.random() * 5).toFixed(1)}px; }
+    .task-item:nth-child(3n) .task-label { line-height: 1.${Math.floor(Math.random() * 4) + 4}; }
+    .progress-fill { transition: width 0.${Math.floor(Math.random() * 8) + 1}s !important; background: linear-gradient(to right, #7dd3fc, #e0f2fe, #38bdf8) !important; }
+    .panel { border-color: rgba(125,200,230,0.${Math.floor(Math.random() * 4) + 2}) !important; }
+    .message-area { font-style: normal; letter-spacing: 0.0${Math.floor(Math.random() * 6)}em; }
+    .cb { border-radius: ${Math.floor(Math.random() * 6) + 2}px; }
+  `;
+  document.head.appendChild(s);
+}
+
+// ─── Periodic background ticks ────────────────────────────────────────────
+
+setInterval(() => {
+  const lv = level();
+  if (lv >= 1) {
+    applyDrift();
+    updateMessage();
+  }
+  if (lv >= 2 && Math.random() < 0.35) scheduleSysNotice();
+  if (lv >= 3) startGlitching();
+}, 3800 + Math.random() * 1400);
+
+// ─── Init ─────────────────────────────────────────────────────────────────
+
+(function init() {
+  const input = document.getElementById('taskInput');
+  const btn   = document.getElementById('addBtn');
+
+  function submit() {
+    const text = input.value.trim();
+    if (!text) return;
+    input.value = '';
+    addUserTask(text);
+    input.focus();
+  }
+
+  btn.addEventListener('click', submit);
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') submit(); });
+})();
+</script>
+</body>
+</html>
