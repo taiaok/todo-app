@@ -365,15 +365,13 @@ h1 {
 /* Productivity teaser */
 .productivity-teaser {
   display: none;
-  margin-top: 14px;
-  margin-bottom: 6px;
-  font-size: 12px;
+  margin-top: 6px;
+  font-size: 11px;
   font-weight: 400;
   color: #9cc8d8;
-  text-align: center;
   letter-spacing: 0.03em;
   font-style: italic;
-  transition: font-weight 0.2s, color 0.3s;
+  transition: color 0.3s;
 }
 
 .productivity-teaser.visible { display: block; }
@@ -980,17 +978,16 @@ function updateProductivityTeaser() {
 
   const n = state.checkClickCount;
   const stages = [
-    { text: 'complete 3 tasks please',                weight: 400, color: '#9cc8d8' },
-    { text: 'complete 3 tasks pretty please',         weight: 500, color: '#7eaabb' },
-    { text: 'complete 3 tasks pretty please with a cherry on top', weight: 600, color: '#2e7a96' },
+    { text: 'complete 3 tasks',           color: '#9cc8d8' },
+    { text: 'complete 3 tasks please',    color: '#7eaabb' },
+    { text: 'complete 3 tasks now',       color: '#5b9ab0' },
+    { text: 'complete 3 tasks right now', color: '#2e7a96' },
   ];
-  const stage = n <= 2 ? stages[0] : n <= 5 ? stages[1] : stages[2];
+  const stage = n === 0 ? stages[0] : n <= 2 ? stages[1] : n <= 5 ? stages[2] : stages[3];
 
   el.classList.add('visible');
   el.textContent = stage.text;
-  el.style.fontWeight = stage.weight;
   el.style.color = stage.color;
-  el.style.fontStyle = stage.weight >= 600 ? 'normal' : 'italic';
 }
 
 // ─── Progress bar ─────────────────────────────────────────────────────────
