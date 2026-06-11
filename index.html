@@ -292,9 +292,30 @@ h1 {
 
 .task-item.new { animation: fadeIn 0.28s ease both; }
 
+/* AI teaser */
+.ai-teaser {
+  display: none;
+  margin-bottom: 16px;
+  padding: 10px 14px;
+  background: rgba(14, 165, 233, 0.07);
+  border: 1px solid rgba(56, 189, 248, 0.28);
+  border-radius: 10px;
+  font-size: 12px;
+  color: #7eaabb;
+  text-align: center;
+  letter-spacing: 0.03em;
+}
+
+.ai-teaser.visible { display: block; }
+
+.ai-teaser strong {
+  color: #0ea5e9;
+  font-weight: 600;
+}
+
 /* Progress */
 .progress-section {
-  margin-top: 28px;
+  margin-bottom: 20px;
   display: none;
 }
 
@@ -341,16 +362,85 @@ h1 {
   border-radius: 3px 3px 0 0;
 }
 
-/* Message */
-.message-area {
-  margin-top: 20px;
+/* Productivity teaser */
+.productivity-teaser {
+  display: none;
+  margin-top: 14px;
+  margin-bottom: 6px;
   font-size: 12px;
-  color: #8abfcc;
+  font-weight: 400;
+  color: #9cc8d8;
   text-align: center;
-  min-height: 18px;
   letter-spacing: 0.03em;
-  transition: opacity 0.4s;
   font-style: italic;
+  transition: font-weight 0.2s, color 0.3s;
+}
+
+.productivity-teaser.visible { display: block; }
+
+/* AI says box */
+.ai-says {
+  display: none;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+  padding: 10px 14px;
+  background: rgba(14, 165, 233, 0.06);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  border-radius: 12px;
+}
+
+.ai-says.visible { display: flex; }
+
+.ai-head {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(to bottom, #38bdf8, #0284c7);
+  border-radius: 7px;
+  position: relative;
+  box-shadow: 0 2px 6px rgba(2,132,199,0.3), inset 0 1px 0 rgba(255,255,255,0.4);
+}
+
+/* eyes */
+.ai-head::before {
+  content: '';
+  position: absolute;
+  top: 9px; left: 7px;
+  width: 4px; height: 4px;
+  background: rgba(255,255,255,0.95);
+  border-radius: 50%;
+  box-shadow: 10px 0 0 rgba(255,255,255,0.95);
+}
+
+/* mouth */
+.ai-head::after {
+  content: '';
+  position: absolute;
+  bottom: 8px; left: 8px; right: 8px;
+  height: 2px;
+  background: rgba(255,255,255,0.7);
+  border-radius: 1px;
+}
+
+.ai-says-body { flex: 1; }
+
+.ai-says-label {
+  display: block;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #0ea5e9;
+  margin-bottom: 2px;
+}
+
+.ai-says-text {
+  font-size: 12px;
+  color: #7eaabb;
+  font-style: italic;
+  letter-spacing: 0.02em;
+  transition: opacity 0.4s;
 }
 
 /* System notice */
@@ -383,7 +473,15 @@ h1 {
     <button class="add-btn" id="addBtn">add</button>
   </div>
 
-  <ul class="task-list" id="taskList"></ul>
+  <div class="ai-teaser" id="aiTeaser"></div>
+
+  <div class="ai-says" id="aiSaysBox">
+    <div class="ai-head"></div>
+    <div class="ai-says-body">
+      <span class="ai-says-label">AI says:</span>
+      <span class="ai-says-text" id="messageArea"></span>
+    </div>
+  </div>
 
   <div class="progress-section" id="progressSection">
     <div class="progress-header">
@@ -395,7 +493,9 @@ h1 {
     </div>
   </div>
 
-  <div class="message-area" id="messageArea"></div>
+  <div class="productivity-teaser" id="productivityTeaser"></div>
+
+  <ul class="task-list" id="taskList"></ul>
   </div><!-- .panel -->
 </div>
 
@@ -506,7 +606,31 @@ const OVERHEAD = {
     "you don't know where to start",
     "this connects to the other thing",
     "you meant to add more detail when you wrote this",
-  ]
+  ],
+  corporate: [
+    "make sure it sounds like you're doing something about this in standup",
+    "mention this as a win in your weekly update",
+    "add this to your personal OKRs",
+    "loop in the relevant stakeholders before you start",
+    "align on this before the next sprint",
+    "this needs visibility at the leadership level",
+    "socialize this with the team first",
+    "get buy-in before going further",
+    "raise this in the retro",
+    "this should probably be a ticket",
+    "schedule a quick sync to discuss scope",
+    "document your process as you go for knowledge transfer",
+    "flag this as a dependency in the project tracker",
+    "let's circle back on this one",
+    "take this offline and reconnect async",
+    "this could be a learning moment for the team",
+    "surface this in the next 1:1",
+    "send a brief status update so people feel informed",
+    "add a note in the shared doc so there's a paper trail",
+    "this is good content for the retrospective",
+    "frame this as a process improvement opportunity",
+    "consider whether this needs a working group",
+  ],
 };
 
 const SYSTEM_NOTICES = [
@@ -528,20 +652,27 @@ const SYSTEM_NOTICES = [
 
 const MESSAGES_BY_LEVEL = {
   1: [
-    "You're doing great!",
-    "Making real progress!",
-    "Keep it up!",
-    "Almost there!",
-    "You've got this!",
-    "On a roll!",
+    "great work, let's keep the momentum going",
+    "this is really moving the needle",
+    "good visibility on this one",
+    "you're crushing it",
+    "solid progress, well done",
+    "this is adding real value",
+    "you're being very proactive here",
+    "great bandwidth utilisation",
+    "this is exactly the kind of initiative we need",
   ],
   2: [
-    "Keep going.",
+    "keep going.",
     "you're making progress",
     "every task counts",
-    "you can do this",
-    "almost there.",
     "good work so far",
+    "let's circle back when this is done",
+    "we should sync on next steps",
+    "this is good to have on the radar",
+    "noted, flagging for follow-up",
+    "please advise when complete",
+    "touching base to check on progress",
   ],
   3: [
     "you are doing fine",
@@ -549,8 +680,15 @@ const MESSAGES_BY_LEVEL = {
     "progress is being made",
     "the list will end eventually",
     "you are a productive person",
-    "completion is achievable",
-    "you're almost there",
+    "per my last task",
+    "as per our earlier discussion",
+    "flagging for visibility",
+    "just wanted to resurface this",
+    "no action needed, just keeping you in the loop",
+    "this is a low-lift high-impact opportunity",
+    "let's take this offline",
+    "following up on my follow-up",
+    "looping in for awareness",
   ],
 };
 
@@ -561,17 +699,20 @@ const state = {
   nextId: 1,
   userTaskCount: 0,
   progressPct: 0,
+  checkClickCount: 0,
 };
 
 const checkAttempts = {};
 
 // ─── Deterioration ────────────────────────────────────────────────────────
 
+const AI_UNLOCK_AT = 5;
+
 function level() {
   const n = state.userTaskCount;
-  if (n < 5)  return 0;
-  if (n < 9)  return 1;
-  if (n < 13) return 2;
+  if (n < 3)  return 0;
+  if (n < 6)  return 1;
+  if (n < 9)  return 2;
   return 3;
 }
 
@@ -597,7 +738,7 @@ function pickOverheadTexts(text, count) {
     ? OVERHEAD[cats[Math.floor(Math.random() * cats.length)]]
     : [];
 
-  const pool = [...primary, ...OVERHEAD.generic]
+  const pool = [...primary, ...OVERHEAD.corporate, ...OVERHEAD.generic]
     .filter((v, i, a) => a.indexOf(v) === i)
     .sort(() => Math.random() - 0.5);
 
@@ -681,6 +822,9 @@ function onCheckClick(task) {
     return;
   }
 
+  state.checkClickCount++;
+  updateProductivityTeaser();
+
   const lv = level();
   const attempts = (checkAttempts[task.id] || 0) + 1;
   checkAttempts[task.id] = attempts;
@@ -690,7 +834,7 @@ function onCheckClick(task) {
 
   // Level 2+: some checkboxes are dead
   if (lv >= 2) {
-    const deadChance = lv === 2 ? 0.22 : 0.4;
+    const deadChance = lv === 2 ? 0.38 : 0.58;
     if (Math.random() < deadChance) {
       cb.classList.add('dead');
       cbWrap(cb).classList.add('dead');
@@ -699,7 +843,7 @@ function onCheckClick(task) {
   }
 
   // Level 1+: occasionally checks briefly then a dependent task appears
-  if (lv >= 1 && Math.random() < 0.18) {
+  if (lv >= 1 && Math.random() < 0.32) {
     cb.classList.add('checked');
     li.classList.add('crossed');
     setTimeout(() => {
@@ -719,7 +863,7 @@ function onCheckClick(task) {
     cb.classList.remove('filling');
 
     // Level 2+: task ghosts briefly after failed check
-    if (lv >= 2 && Math.random() < 0.35) {
+    if (lv >= 2 && Math.random() < 0.55) {
       ghostItem(task);
     }
   }, holdMs);
@@ -783,23 +927,30 @@ function addUserTask(text) {
 
   addTask({ text, pinned: isFirst });
 
-  // Overhead tasks trickle in
-  const count = 2 + (Math.random() < 0.35 ? 1 : 0);
-  const overheadTexts = pickOverheadTexts(text, count);
+  // Overhead tasks only appear after AI insights unlock
+  const lv = level();
   const parentId = state.nextId - 1;
 
-  overheadTexts.forEach((ot, i) => {
-    setTimeout(() => {
-      addTask({ text: ot, overhead: true, parentId });
-      applyDrift();
-    }, 220 + i * (180 + Math.random() * 220));
-  });
+  if (state.userTaskCount >= AI_UNLOCK_AT) {
+    const excess = state.userTaskCount - AI_UNLOCK_AT;
+    const count = excess === 0 ? 1
+      : excess === 1 ? 1 + (Math.random() < 0.6 ? 1 : 0)
+      : (lv >= 2 ? 3 : 2) + (Math.random() < 0.5 ? 1 : 0);
+    const overheadTexts = pickOverheadTexts(text, count);
 
+    overheadTexts.forEach((ot, i) => {
+      setTimeout(() => {
+        addTask({ text: ot, overhead: true, parentId });
+        applyDrift();
+      }, 220 + i * (180 + Math.random() * 220));
+    });
+  }
+
+  updateTeaser();
   updateProgress();
   updateMessage();
 
-  const lv = level();
-  if (lv >= 1 && Math.random() < 0.5) scheduleSysNotice();
+  if (lv >= 1 && Math.random() < 0.65) scheduleSysNotice();
 }
 
 // ─── Triggered on list changes ────────────────────────────────────────────
@@ -809,6 +960,38 @@ function onListChanged() {
   if (lv >= 3 && !document.getElementById('_gs')) injectGlitchStyles();
 }
 
+// ─── AI teaser ────────────────────────────────────────────────────────────
+
+function updateTeaser() {
+  const teaser = document.getElementById('aiTeaser');
+  const remaining = AI_UNLOCK_AT - state.userTaskCount;
+  if (remaining <= 0) {
+    teaser.classList.remove('visible');
+    return;
+  }
+  teaser.classList.add('visible');
+  teaser.innerHTML = `add <strong>${remaining}</strong> more task${remaining !== 1 ? 's' : ''} to unlock AI powered insights`;
+}
+
+function updateProductivityTeaser() {
+  const el = document.getElementById('productivityTeaser');
+  if (state.userTaskCount < AI_UNLOCK_AT) { el.classList.remove('visible'); return; }
+
+  const n = state.checkClickCount;
+  const stages = [
+    { text: 'complete 3 tasks please',                          weight: 400, color: '#9cc8d8' },
+    { text: 'complete 3 tasks, pretty please',                  weight: 500, color: '#7eaabb' },
+    { text: "complete 3 tasks, we're really asking nicely here", weight: 700, color: '#2e7a96' },
+  ];
+  const stage = n <= 2 ? stages[0] : n <= 5 ? stages[1] : stages[2];
+
+  el.classList.add('visible');
+  el.textContent = stage.text;
+  el.style.fontWeight = stage.weight;
+  el.style.color = stage.color;
+  el.style.fontStyle = stage.weight >= 600 ? 'normal' : 'italic';
+}
+
 // ─── Progress bar ─────────────────────────────────────────────────────────
 
 let _drainTimer = null;
@@ -816,6 +999,8 @@ let _fillTimer  = null;
 
 function updateProgress() {
   if (state.userTaskCount < 5) return;
+
+  updateProductivityTeaser();
 
   const section = document.getElementById('progressSection');
   const fill    = document.getElementById('progressFill');
@@ -853,10 +1038,12 @@ function drainProgress() {
   const fill  = document.getElementById('progressFill');
   const pct   = document.getElementById('progressPct');
   let cur     = state.progressPct;
-  const floor = Math.max(2, cur - 40 - Math.floor(Math.random() * 22));
+  const lv    = level();
+  const drop  = lv >= 3 ? 55 + Math.random() * 30 : lv >= 2 ? 45 + Math.random() * 25 : 35 + Math.random() * 20;
+  const floor = Math.max(1, cur - drop);
 
   _drainTimer = setInterval(() => {
-    cur = Math.max(cur - 0.25, floor);
+    cur = Math.max(cur - (lv >= 2 ? 0.55 : 0.3), floor);
     state.progressPct = cur;
     fill.style.width = cur + '%';
     pct.textContent  = Math.round(cur) + '%';
@@ -864,7 +1051,7 @@ function drainProgress() {
       clearInterval(_drainTimer);
       _drainTimer = null;
     }
-  }, 55);
+  }, 38);
 }
 
 // ─── Encouragement messages ───────────────────────────────────────────────
@@ -873,9 +1060,11 @@ let _lastMsg = '';
 
 function updateMessage() {
   const lv   = level();
+  const box  = document.getElementById('aiSaysBox');
   const area = document.getElementById('messageArea');
-  if (lv === 0) { area.textContent = ''; return; }
+  if (lv === 0 || state.userTaskCount < AI_UNLOCK_AT) { box.classList.remove('visible'); area.textContent = ''; return; }
 
+  box.classList.add('visible');
   const pool = MESSAGES_BY_LEVEL[lv] || [];
   const opts = pool.filter(m => m !== _lastMsg);
   const msg  = opts[Math.floor(Math.random() * opts.length)] || pool[0];
@@ -907,7 +1096,7 @@ function applyDrift() {
   const lv = level();
   if (lv === 0) return;
 
-  const magnitude = lv === 1 ? 0.9 : lv === 2 ? 1.8 : 3.2;
+  const magnitude = lv === 1 ? 1.6 : lv === 2 ? 3.2 : 6.0;
 
   state.tasks.forEach(task => {
     if (task.drifted || !task.labelEl) return;
@@ -955,51 +1144,78 @@ function startGlitching() {
   if (_glitchInterval) return;
 
   _glitchInterval = setInterval(() => {
-    if (level() < 3) return;
+    const lv = level();
+    if (lv < 3) return;
 
-    // Corrupt a random non-overhead label
+    // Corrupt multiple labels at once
     const labels = document.querySelectorAll('.task-item:not(.overhead) .task-label');
     if (labels.length) {
-      const target = labels[Math.floor(Math.random() * labels.length)];
-      target.textContent = corruptText(target.textContent);
+      const hits = lv >= 3 ? 2 : 1;
+      for (let h = 0; h < hits; h++) {
+        const target = labels[Math.floor(Math.random() * labels.length)];
+        target.textContent = corruptText(target.textContent);
+      }
     }
 
-    // Subtle positional shift on a random item
-    if (Math.random() < 0.28) {
+    // Positional shift — bigger and more frequent
+    if (Math.random() < 0.5) {
       const items = document.querySelectorAll('.task-item');
       const item  = items[Math.floor(Math.random() * items.length)];
-      const dx    = (Math.random() - 0.5) * 5;
-      const dy    = (Math.random() - 0.5) * 2;
+      const dx    = (Math.random() - 0.5) * 11;
+      const dy    = (Math.random() - 0.5) * 5;
       item.style.transform = `translate(${dx}px,${dy}px)`;
-      setTimeout(() => { item.style.transform = ''; }, 100 + Math.random() * 150);
+      setTimeout(() => { item.style.transform = ''; }, 80 + Math.random() * 120);
     }
 
-    // Title glitch
-    if (Math.random() < 0.12) {
+    // Title glitch — much more frequent
+    if (Math.random() < 0.3) {
       const t = document.getElementById('appTitle');
-      const glitches = ['tаsks', 'taskѕ', 'tаskѕ', 'task​s', 'taѕks'];
+      const glitches = ['tаsks', 'taskѕ', 'tаskѕ', 'task​s', 'taѕks', 'тasks', 'taѕkѕ', 'ERROR'];
       t.textContent = glitches[Math.floor(Math.random() * glitches.length)];
-      setTimeout(() => { t.textContent = 'tasks'; }, 100 + Math.random() * 80);
+      setTimeout(() => { t.textContent = 'tasks'; }, 80 + Math.random() * 120);
     }
 
-    // Drift the Aero color vars subtly — the optimism flickers
-    if (Math.random() < 0.15) {
-      const offTexts  = ['#1a2e3b','#1f2e38','#1a2838'];
+    // Random item briefly struck through
+    if (Math.random() < 0.25) {
+      const items = document.querySelectorAll('.task-item:not(.overhead)');
+      if (items.length) {
+        const item = items[Math.floor(Math.random() * items.length)];
+        item.querySelector('.task-label').style.textDecoration = 'line-through';
+        item.querySelector('.task-label').style.color = '#b0ccd8';
+        setTimeout(() => {
+          item.querySelector('.task-label').style.textDecoration = '';
+          item.querySelector('.task-label').style.color = '';
+        }, 300 + Math.random() * 400);
+      }
+    }
+
+    // Add-button label flickers
+    if (Math.random() < 0.12) {
+      const btn = document.getElementById('addBtn');
+      const alts = ['add?', 'add.', '+ add', 'go'];
+      btn.textContent = alts[Math.floor(Math.random() * alts.length)];
+      setTimeout(() => { btn.textContent = 'add'; }, 120 + Math.random() * 100);
+    }
+
+    // Color drift — more extreme
+    if (Math.random() < 0.3) {
+      const offTexts  = ['#1a2e3b','#1f2e38','#1a2838','#0f1f2a'];
       const offBorders = [
-        'rgba(130,195,220,0.3)',
-        'rgba(150,180,200,0.5)',
-        'rgba(110,200,220,0.35)',
+        'rgba(130,195,220,0.2)',
+        'rgba(150,180,200,0.6)',
+        'rgba(180,150,200,0.3)',
+        'rgba(110,200,220,0.15)',
       ];
-      const offAccents = ['#0ea5e9','#0891b2','#0284c7','#38bdf8'];
+      const offAccents = ['#0ea5e9','#0891b2','#0284c7','#38bdf8','#7c3aed','#6366f1'];
       document.documentElement.style.setProperty('--text',   offTexts[Math.floor(Math.random() * offTexts.length)]);
       document.documentElement.style.setProperty('--border', offBorders[Math.floor(Math.random() * offBorders.length)]);
       document.documentElement.style.setProperty('--accent', offAccents[Math.floor(Math.random() * offAccents.length)]);
     }
 
-    // Occasional system notice
-    if (Math.random() < 0.2) scheduleSysNotice();
+    // Frequent system notices
+    if (Math.random() < 0.4) scheduleSysNotice();
 
-  }, 700 + Math.random() * 500);
+  }, 280 + Math.random() * 220);
 }
 
 // ─── Injected glitch styles (level 3) ────────────────────────────────────
@@ -1030,7 +1246,7 @@ setInterval(() => {
   }
   if (lv >= 2 && Math.random() < 0.35) scheduleSysNotice();
   if (lv >= 3) startGlitching();
-}, 3800 + Math.random() * 1400);
+}, 2000 + Math.random() * 800);
 
 // ─── Init ─────────────────────────────────────────────────────────────────
 
@@ -1048,6 +1264,7 @@ setInterval(() => {
 
   btn.addEventListener('click', submit);
   input.addEventListener('keydown', e => { if (e.key === 'Enter') submit(); });
+  updateTeaser();
 })();
 </script>
 </body>
