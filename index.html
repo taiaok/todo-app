@@ -648,47 +648,38 @@ const SYSTEM_NOTICES = [
   "3 items require attention",
 ];
 
-const MESSAGES_BY_LEVEL = {
-  1: [
-    "great work, let's keep the momentum going",
-    "this is really moving the needle",
-    "good visibility on this one",
-    "you're crushing it",
-    "solid progress, well done",
-    "this is adding real value",
-    "you're being very proactive here",
-    "great bandwidth utilisation",
-    "this is exactly the kind of initiative we need",
-  ],
-  2: [
-    "keep going.",
-    "you're making progress",
-    "every task counts",
-    "good work so far",
-    "let's circle back when this is done",
-    "we should sync on next steps",
-    "this is good to have on the radar",
-    "noted, flagging for follow-up",
-    "please advise when complete",
-    "touching base to check on progress",
-  ],
-  3: [
-    "you are doing fine",
-    "tasks completed: 0",
-    "progress is being made",
-    "the list will end eventually",
-    "you are a productive person",
-    "per my last task",
-    "as per our earlier discussion",
-    "flagging for visibility",
-    "just wanted to resurface this",
-    "no action needed, just keeping you in the loop",
-    "this is a low-lift high-impact opportunity",
-    "let's take this offline",
-    "following up on my follow-up",
-    "looping in for awareness",
-  ],
-};
+const AI_MESSAGES = [
+  "you're crushing it 💙",
+  "momentum is everything",
+  "love the energy here",
+  "this is your moment",
+  "big things start small",
+  "stay in your flow state",
+  "trust the process",
+  "progress over perfection",
+  "you showed up. that's everything.",
+  "you're building something real",
+  "keep going.",
+  "consistency compounds",
+  "the grind is real",
+  "we see you",
+  "stay focused",
+  "you're doing the work",
+  "one task at a time",
+  "every task is a step",
+  "results take time",
+  "you are on the right track",
+  "tasks completed: 0",
+  "you are enough",
+  "output is output",
+  "doing is being",
+  "noted",
+  "results pending",
+  "the list will end",
+  "syncing",
+  "you are a productive person",
+  "progress is being made",
+];
 
 // ─── State ────────────────────────────────────────────────────────────────
 
@@ -1057,15 +1048,13 @@ function drainProgress() {
 let _lastMsg = '';
 
 function updateMessage() {
-  const lv   = level();
   const box  = document.getElementById('aiSaysBox');
   const area = document.getElementById('messageArea');
-  if (lv === 0 || state.userTaskCount < AI_UNLOCK_AT) { box.classList.remove('visible'); area.textContent = ''; return; }
+  if (state.userTaskCount < AI_UNLOCK_AT) { box.classList.remove('visible'); area.textContent = ''; return; }
 
   box.classList.add('visible');
-  const pool = MESSAGES_BY_LEVEL[lv] || [];
-  const opts = pool.filter(m => m !== _lastMsg);
-  const msg  = opts[Math.floor(Math.random() * opts.length)] || pool[0];
+  const opts = AI_MESSAGES.filter(m => m !== _lastMsg);
+  const msg  = opts[Math.floor(Math.random() * opts.length)];
   _lastMsg = msg;
 
   area.style.opacity = '0';
