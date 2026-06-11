@@ -706,7 +706,7 @@ const checkAttempts = {};
 
 // ─── Deterioration ────────────────────────────────────────────────────────
 
-const AI_UNLOCK_AT = 5;
+const AI_UNLOCK_AT = 3;
 
 function level() {
   const n = state.userTaskCount;
@@ -824,6 +824,7 @@ function onCheckClick(task) {
 
   state.checkClickCount++;
   updateProductivityTeaser();
+  updateMessage();
 
   const lv = level();
   const attempts = (checkAttempts[task.id] || 0) + 1;
@@ -979,9 +980,9 @@ function updateProductivityTeaser() {
 
   const n = state.checkClickCount;
   const stages = [
-    { text: 'complete 3 tasks please',                          weight: 400, color: '#9cc8d8' },
-    { text: 'complete 3 tasks, pretty please',                  weight: 500, color: '#7eaabb' },
-    { text: "complete 3 tasks, we're really asking nicely here", weight: 700, color: '#2e7a96' },
+    { text: 'complete 3 tasks please',                weight: 400, color: '#9cc8d8' },
+    { text: 'complete 3 tasks pretty please',         weight: 500, color: '#7eaabb' },
+    { text: 'complete 3 tasks pretty please with a cherry on top', weight: 600, color: '#2e7a96' },
   ];
   const stage = n <= 2 ? stages[0] : n <= 5 ? stages[1] : stages[2];
 
@@ -998,7 +999,7 @@ let _drainTimer = null;
 let _fillTimer  = null;
 
 function updateProgress() {
-  if (state.userTaskCount < 5) return;
+  if (state.userTaskCount < AI_UNLOCK_AT) return;
 
   updateProductivityTeaser();
 
@@ -1242,7 +1243,6 @@ setInterval(() => {
   const lv = level();
   if (lv >= 1) {
     applyDrift();
-    updateMessage();
   }
   if (lv >= 2 && Math.random() < 0.35) scheduleSysNotice();
   if (lv >= 3) startGlitching();
